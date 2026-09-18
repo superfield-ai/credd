@@ -1,0 +1,9 @@
+[package]
+name = "credd-peercred"
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[target.'cfg(target_os = "linux")'.dependencies]
+libc = "0.2"
+rustix = { version = "0.38", features = ["process", "net"] }
