@@ -14,7 +14,7 @@ In production, credd assumes the host itself may be compromised and is designed 
 
 Two processes, not one.
 
-**credd-core** owns the unsealed envelope key and does exactly three things: decrypt a lease, sign an audit event, verify a multisig bundle. It has no network listener and no JSON parser for untrusted input — it speaks a tiny length-prefixed protocol over a socket it owns. On Linux it runs under a dedicated user with a seccomp profile; on macOS as a launchd daemon under a separate UID.
+**credd-core** owns the unsealed envelope key and does exactly three things: decrypt a lease, sign an audit event, verify a multisig bundle. It has no network listener and no JSON parser for untrusted input — it speaks a tiny length-prefixed protocol over a socket it owns (policy is signed YAML and is parsed only after Ed25519 verification, so the no-JSON-parser property holds narrowly for the untrusted Unix-socket path). On Linux it runs under a dedicated user with a seccomp profile; on macOS as a launchd daemon under a separate UID.
 
 **Guards** (exec proxy, monitor, MCP server) are separate stateless processes that hold nothing durable and can be restarted at will. A guard RCE gets an attacker exactly the leases that guard currently holds and nothing else — never the root key.
 
@@ -164,9 +164,9 @@ Residual: collusion among M approvers, which is a people problem and should be p
 
 ## Audit and Availability
 
-Every event is hash-chained and signed by credd-core, then shipped to an append-only remote sink the host cannot delete from. In production the sink lives in a separate account; on dev machines it is the team's central credd instance. Chain gaps are alerts.
+Every event is hash-chained and signed by credd-core, then shipped to an append-only remote sink the host cannot delete from. In production the sink is S3/GCS Object Lock (WORM) in a separate account with write-only credentials; on dev machines it is the team's central credd instance (local file sink). Chain gaps are alerts.
 
-Guards fail closed. credd-core unavailability blocks new leases, but leases already issued keep working until expiry — a five-minute outage does not break a deploy in progress. Production runs two cores per zone against a shared sealed store on KMS.
+Guards fail closed. credd-core unavailability blocks new leases, but leases already issued keep working until expiry — a five-minute outage does not break a deploy in progress. Revocation during a core outage is therefore bounded by the lease's remaining TTL. Production runs two cores per zone against a shared sealed store on KMS.
 
 ## Residual Risks
 

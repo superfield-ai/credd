@@ -45,10 +45,10 @@ The toolchain for secret management across developer environments, continuous in
 - General-purpose network sniffing or man-in-the-middle inspection of all host traffic (monitoring is restricted to known plaintext boundaries).
 - Silent redaction of detected secrets (the system strictly revokes leases to avoid evasion learning).
 - Complete evasion prevention for semantic paraphrasing of secrets by a language model.
-- Inline vendor proxies, inline egress scanning, and spend caps (monitoring relies on out-of-band log tailing instead).
+- Inline vendor proxies, inline egress scanning, and spend caps (monitoring relies on out-of-band log tailing instead). The `credd-scanner` crate's "egress scanning" refers to out-of-band scanning at plaintext boundaries (git hooks, proxy, history, clipboard), not inline network MITM.
 
 ## 9. Constraints
-- **Zero External Dependencies**: The system runs as a single binary without requiring external SaaS services, orchestration, or database clusters.
+- **Zero External Dependencies**: The system runs as a single binary without requiring external SaaS services, orchestration, or database clusters. Production hardening adds optional operator-provided infrastructure you control (WORM object store in a separate account for the audit chain, KMS for KEK sealing); dev mode operates with no external dependencies (local file sink, OS keychain/software KEK).
 - **Self-Hosted Only**: The product is strictly self-hosted open-source software. There is no managed or hosted offering.
 - **Open-Source License**: The software is licensed under a permissive open-source license.
 - **Platform Support**: Primary targets must support process namespace isolation and containerization to guarantee full security boundaries. Environments lacking native namespace capabilities are treated as convenience targets with explicitly reduced isolation guarantees.
