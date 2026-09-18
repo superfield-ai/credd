@@ -48,6 +48,8 @@ Tier 2 operations and all policy mutations are canonical request objects — ope
 
 **Leak monitor.** Not a general network sniffer (TLS makes that blind without an on-host CA, which is a bigger risk than the one it solves). Instead it runs as hooks where it can see plaintext: git pre-commit and pre-push, the execution proxy, shell history, clipboard. A hit revokes the lease and, for Tier 1 secrets, opens a rotation ticket automatically.
 
+**Scope limitation**: The monitor deliberately does not perform inline egress scanning or silent redaction (see PRD §8 Out of Scope). It operates out-of-band on known plaintext boundaries. Current hook coverage misses: container logs (docker/podman), Kubernetes pod logs, CI job logs, editor swap files, tmux/screen capture, browser devtools, VS Code extension host. Log source plugin architecture, cursor persistence, rotation handling, and backpressure are unspecified — see [ADR-0011: Leak Monitor Plugin Architecture](../adr/0011-leak-monitor-plugins.md) (to be created).
+
 ## Attack Vectors and Defenses
 
 This is the section that decides whether the design is real. Each vector below names the concrete mechanism an attacker uses, the control that blocks or bounds it, and what is left over.
@@ -162,6 +164,21 @@ Every control above assumes the operator is honest. Multisig is the control that
 
 Residual: collusion among M approvers, which is a people problem and should be priced as one when choosing M.
 
+## Cross-Platform Guard Isolation Parity
+
+| Mechanism | Linux | macOS | Notes |
+|-----------|-------|-------|-------|
+| Dedicated UID for core | ✅ | ✅ | launchd daemon under separate UID |
+| Dedicated UID per guard | ✅ | ✅ | |
+| seccomp-bpf syscall allowlist | ✅ | ❌ | macOS: Seatbelt profile (not implemented) |
+| Network namespace egress allowlist | ✅ | ❌ | macOS: Network Extension (not implemented) |
+| pidfd / SO_PEERPIDFD | ✅ (Linux 5.10+/6.5+) | ❌ | macOS: LOCAL_PEERCRED only, no PID pinning |
+| /proc hidepid=2 | ✅ | ❌ | macOS: no equivalent |
+| mlock / zeroize / no core dumps | ✅ | ✅ | hardened runtime, no get-task-allow |
+| Executable hash via /proc/<pid>/exe O_PATH | ✅ | ⚠️ | macOS: codesign + csops, not path-based |
+
+**Summary**: Linux provides strong, enforceable isolation. macOS isolation is advisory — the security story on macOS rests on tiering, TTLs, and audit, not on guard compromise containment. Documented as known limitation. See [ADR-0004: Cross-Platform Guard Parity](../adr/0004-cross-platform-guard-parity.md) (to be created).
+
 ## Audit and Availability
 
 Every event is hash-chained and signed by credd-core, then shipped to an append-only remote sink the host cannot delete from. In production the sink is S3/GCS Object Lock (WORM) in a separate account with write-only credentials; on dev machines it is the team's central credd instance (local file sink). Chain gaps are alerts.
@@ -179,3 +196,5 @@ Nothing on the host can reach Tier 2 secrets or change policy without other huma
 ### Note 1 — Approval routing and reviewer UI
 
 Requests are broadcast to approvers through a pluggable notifier (Slack, PagerDuty, or a CLI inbox); the channel is a convenience and carries no trust, since the signature is over the request bytes and is verified independently. The reviewer sees a diff rather than a summary — for a policy change, the literal YAML diff; for a Tier 2 read, the path, the requesting principal, and the recent audit history for that principal. Approvals are time-boxed, and an approver who signs from the requesting host is rejected.
+
+**Detailed protocol specification**: See [ADR-0001: Approval Protocol Wire Format](../adr/0001-approval-protocol.md) (to be created).

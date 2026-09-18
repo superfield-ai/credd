@@ -1,6 +1,10 @@
 # credd
 
-A credential daemon that combines a sealed secret store, an execution proxy, a leaked-secret monitor, and multi-human approval — in a single self-hosted binary with no required external SaaS, orchestration, or DB cluster. Production hardening (audit WORM sink, KMS sealing) uses infrastructure you already operate (S3/GCS Object Lock, KMS) in a separate account you control; dev mode uses a local file sink and OS keychain with no external dependencies.
+A credential daemon that combines a sealed secret store, an execution proxy, a leaked-secret monitor, and multi-human approval — in a single self-hosted binary. 
+
+**Dev mode**: Zero external dependencies — local file audit sink, OS keychain/software KEK.
+
+**Production hardening**: Adds optional operator-provided infrastructure you control — WORM object sink (S3/GCS Object Lock) in a separate account for audit chain, KMS/TPM/Enclave for KEK sealing. No required SaaS, orchestration, or DB cluster.
 
 credd replaces the stack most teams cobble together (Vault + sops + aws-vault + gitleaks + manual rotation runbooks) with one daemon that has a coherent security model from a developer's sandbox keys to a production cluster's signing credentials.
 
@@ -106,3 +110,7 @@ Early development. See [DESIGN.md](docs/DESIGN.md) for the full design proposal.
 ## License
 
 TBD
+
+## Architectural Decision Records
+
+Significant architectural decisions are captured in [docs/adr/](docs/adr/). See [docs/adr/README.md](docs/adr/README.md) for the index and process.
