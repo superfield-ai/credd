@@ -48,7 +48,7 @@ The toolchain for secret management across developer environments, continuous in
 - Inline vendor proxies, inline egress scanning, and spend caps (monitoring relies on out-of-band log tailing instead).
 
 ## 9. Constraints
-- **Zero External Dependencies**: The system runs as a single binary without relying on external orchestration or database clusters.
+- **Zero External Dependencies**: The system runs as a single binary without requiring external SaaS services, orchestration, or database clusters.
 - **Self-Hosted Only**: The product is strictly self-hosted open-source software. There is no managed or hosted offering.
 - **Open-Source License**: The software is licensed under a permissive open-source license.
 - **Platform Support**: Primary targets must support process namespace isolation and containerization to guarantee full security boundaries. Environments lacking native namespace capabilities are treated as convenience targets with explicitly reduced isolation guarantees.

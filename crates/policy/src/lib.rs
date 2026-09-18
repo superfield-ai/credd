@@ -1,1 +1,1 @@
-//! Secret tier classification, lease policy, spend caps, and principal matching.
+//! Secret tier classification, lease policy, and principal matching.
