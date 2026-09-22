@@ -1,12 +1,16 @@
-# credd
-
+# CCSD - Credential Daemon
 A credential daemon that combines a sealed secret store, an execution proxy, a leaked-secret monitor, and multi-human approval — in a single self-hosted binary. 
 
 **Dev mode**: Zero external dependencies — local file audit sink, OS keychain/software KEK.
 
 **Production hardening**: Adds optional operator-provided infrastructure you control — WORM object sink (S3/GCS Object Lock) in a separate account for audit chain, KMS/TPM/Enclave for KEK sealing. No required SaaS, orchestration, or DB cluster.
 
-credd replaces the stack most teams cobble together (Vault + sops + aws-vault + gitleaks + manual rotation runbooks) with one daemon that has a coherent security model from a developer's sandbox keys to a production cluster's signing credentials.
+ccsd replaces the stack most teams cobble together (Vault + sops + aws-vault + gitleaks + manual rotation runbooks) with one daemon that has a coherent security model from a developer's sandbox keys to a production cluster's signing credentials.
+
+### What's with the name
+It comes from a Portuguese interjection to ward off evil:
+#### "Cruz, credo, sai demônio!"
+
 
 ## Architecture
 
